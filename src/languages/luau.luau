@@ -25,7 +25,7 @@ local MULTILINE_COMMENT_INCOMPLETE = "^%-%-%[%[.-.*"
 local SINGLELINE_COMMENT = "^%-%-.-\n"
 local SINGLELINE_COMMENT_INCOMPLETE = "^%-%-.-.*"
 
-local lua_keyword = {
+local luau_keyword = {
 	["and"] = true,
 	["break"] = true,
 	["do"] = true,
@@ -50,7 +50,7 @@ local lua_keyword = {
 	["until"] = true,
 	["continue"] = true,
 }
-local lua_builtin = {
+local luau_builtin = {
 	["assert"] = true,
 	["collectgarbage"] = true,
 	["error"] = true,
@@ -102,9 +102,9 @@ local function whitespace_dump(tok: string): (TokenType, string)
 end
 
 local function lua_vdump(tok: string): (TokenType, string)
-	if lua_keyword[tok] then
+	if luau_keyword[tok] then
 		return "keyword", tok
-	elseif lua_builtin[tok] then
+	elseif luau_builtin[tok] then
 		return "builtin", tok
 	else
 		return "iden", tok
@@ -145,5 +145,6 @@ return table.freeze {
 	{ pattern = "^//", func = token_dump },
 	{ pattern = "^%.%.%.", func = token_dump },
 	{ pattern = "^%.%.", func = token_dump },
+	{ pattern = "^%.%.=", func = token_dump },
 	{ pattern = "^.", func = token_dump },
 } :: types.Language<TokenType>
