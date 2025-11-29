@@ -116,10 +116,10 @@ return table.freeze {
 
 	{ pattern = WHITESPACE, func = whitespace_dump },
 
+	{ pattern = NUMBER_BIN, func = number_dump },
+	{ pattern = NUMBER_HEX, func = number_dump },
 	{ pattern = NUMBER_SCI, func = number_dump },
 	{ pattern = NUMBER_DECI, func = number_dump },
-	{ pattern = NUMBER_HEX, func = number_dump },
-	{ pattern = NUMBER_BIN, func = number_dump },
 
 	{ pattern = STRING_EMPTY, func = string_dump },
 	{ pattern = STRING_ESCAPE, func = string_dump },
