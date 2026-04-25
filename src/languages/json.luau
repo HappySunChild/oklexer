@@ -1,4 +1,4 @@
-local types = require "../types"
+local types = require("../types")
 
 type TokenType = "string" | "number" | "bool" | "null" | "whitespace" | string
 
@@ -56,7 +56,7 @@ local function dump_number(tok: string): (TokenType, string)
 	return "number", tok
 end
 
-return table.freeze {
+return table.freeze({
 	{ pattern = WHITESPACE, func = dump_whitespace },
 
 	{ pattern = NUMBER_SCI, func = dump_number },
@@ -70,4 +70,4 @@ return table.freeze {
 	{ pattern = STRING, func = dump_string },
 
 	{ pattern = "^.", func = dump_token },
-} :: types.Language<TokenType>
+}) :: types.Language<TokenType>

@@ -1,6 +1,6 @@
-local types = require "../types"
+local types = require("../types")
 
-type TokenType = "number" | "string" | "comment" | "whitespace" | "keyword" | "builtin" | "iden" | string
+type TokenType = "number" | "string" | "comment" | "whitespace" | "keyword" | "builtin" | "iden" | "operator" | string
 
 -- local NUMBER1 = "^[%+%-]?%d+%.?%d*[eE][%+%-]?%d+"
 -- local NUMBER2 = "^[%+%-]?%d+%.?%d*"
@@ -16,6 +16,7 @@ local STRING = [[^(['"]).-[^\](\*)%2%1]]
 local STRING_INCOMPLETE = "^(['\"]).-.*"
 local STRING_EMPTY = "^(['\"])%1"
 local STRING_ESCAPE = [[^(['"])(\*)%2%1]]
+local STRING_INTERPOLATED = "^`.-`"
 
 local MULTILINE_STRING = "^%[(=*)%[.-%]%1%]"
 local MULTILINE_STRING_INCOMPLETE = "^%[%[.-.*"
@@ -25,7 +26,7 @@ local MULTILINE_COMMENT_INCOMPLETE = "^%-%-%[%[.-.*"
 local SINGLELINE_COMMENT = "^%-%-.-\n"
 local SINGLELINE_COMMENT_INCOMPLETE = "^%-%-.-.*"
 
-local luau_keyword = {
+local LUAU_KEYWORDS = {
 	["and"] = true,
 	["break"] = true,
 	["do"] = true,
@@ -50,7 +51,7 @@ local luau_keyword = {
 	["until"] = true,
 	["continue"] = true,
 }
-local luau_builtin = {
+local LUAU_BUILTIN = {
 	["assert"] = true,
 	["collectgarbage"] = true,
 	["error"] = true,
@@ -80,8 +81,44 @@ local luau_builtin = {
 	["require"] = true,
 	["typeof"] = true,
 }
+local LUAU_OPERATORS = {
+	["("] = true,
+	[")"] = true,
+
+	["["] = true,
+	["]"] = true,
+
+	["{"] = true,
+	["}"] = true,
+
+	["="] = true,
+	["+"] = true,
+	["-"] = true,
+	["*"] = true,
+	["/"] = true,
+	["^"] = true,
+	["%"] = true,
+	["=="] = true,
+	["~="] = true,
+	["<="] = true,
+	[">="] = true,
+	["+="] = true,
+	["-="] = true,
+	["*="] = true,
+	["/="] = true,
+	["^="] = true,
+	["%="] = true,
+	["//="] = true,
+	["//"] = true,
+	[".."] = true,
+	["..="] = true,
+}
 
 local function token_dump(tok: string): (TokenType, string)
+	if LUAU_OPERATORS[tok] then
+		return "operator", tok
+	end
+
 	return tok, tok
 end
 
@@ -102,19 +139,19 @@ local function whitespace_dump(tok: string): (TokenType, string)
 end
 
 local function lua_vdump(tok: string): (TokenType, string)
-	if luau_keyword[tok] then
+	if LUAU_KEYWORDS[tok] then
 		return "keyword", tok
-	elseif luau_builtin[tok] then
+	elseif LUAU_BUILTIN[tok] then
 		return "builtin", tok
 	else
 		return "iden", tok
 	end
 end
 
-return table.freeze {
-	{ pattern = IDEN, func = lua_vdump },
-
+return table.freeze({
 	{ pattern = WHITESPACE, func = whitespace_dump },
+
+	{ pattern = IDEN, func = lua_vdump },
 
 	{ pattern = NUMBER_BIN, func = number_dump },
 	{ pattern = NUMBER_HEX, func = number_dump },
@@ -127,6 +164,7 @@ return table.freeze {
 	{ pattern = STRING_INCOMPLETE, func = string_dump },
 	{ pattern = MULTILINE_STRING, func = string_dump },
 	{ pattern = MULTILINE_STRING_INCOMPLETE, func = string_dump },
+	{ pattern = STRING_INTERPOLATED, func = string_dump },
 
 	{ pattern = MULTILINE_COMMENT, func = comment_dump },
 	{ pattern = MULTILINE_COMMENT_INCOMPLETE, func = comment_dump },
@@ -142,9 +180,11 @@ return table.freeze {
 	{ pattern = "^*=", func = token_dump },
 	{ pattern = "^/=", func = token_dump },
 	{ pattern = "^//=", func = token_dump },
+	{ pattern = "^%*=", func = token_dump },
+	{ pattern = "^%%=", func = token_dump },
 	{ pattern = "^//", func = token_dump },
 	{ pattern = "^%.%.%.", func = token_dump },
 	{ pattern = "^%.%.", func = token_dump },
 	{ pattern = "^%.%.=", func = token_dump },
 	{ pattern = "^.", func = token_dump },
-} :: types.Language<TokenType>
+}) :: types.Language<TokenType>
