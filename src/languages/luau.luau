@@ -1,32 +1,32 @@
-local types = require("../types")
+const types = require("../types")
 
 type TokenType = "number" | "string" | "comment" | "whitespace" | "keyword" | "builtin" | "iden" | "operator" | string
 
--- local NUMBER1 = "^[%+%-]?%d+%.?%d*[eE][%+%-]?%d+"
--- local NUMBER2 = "^[%+%-]?%d+%.?%d*"
-local IDEN = "^[%a_][%w_]*"
-local WHITESPACE = "^%s+"
+const IDEN = "^[%a_][%w_]*"
+const WHITESPACE = "^%s+"
 
-local NUMBER_DECI = "^%d*%.?%d+"
-local NUMBER_HEX = "^0x[%da-fA-F]+"
-local NUMBER_BIN = "^0b[01]+"
-local NUMBER_SCI = "^%d+%.?%d*[eE][%+%-]?%d+"
+const NUMBER_DECI = "^%d*%.?%d+"
+const NUMBER_HEX = "^0x[%da-fA-F]+"
+const NUMBER_BIN = "^0b[01]+"
+const NUMBER_SCI = "^%d+%.?%d*[eE][%+%-]?%d+"
 
-local STRING = [[^(['"]).-[^\](\*)%2%1]]
-local STRING_INCOMPLETE = "^(['\"]).-.*"
-local STRING_EMPTY = "^(['\"])%1"
-local STRING_ESCAPE = [[^(['"])(\*)%2%1]]
-local STRING_INTERPOLATED = "^`.-`"
+const STRING = [[^(['"]).-[^\](\*)%2%1]]
+const STRING_INCOMPLETE = "^(['\"]).-.*"
+const STRING_EMPTY = "^(['\"])%1"
+const STRING_ESCAPE = [[^(['"])(\*)%2%1]]
+const STRING_INTERPOLATED = "^`.-`"
 
-local MULTILINE_STRING = "^%[(=*)%[.-%]%1%]"
-local MULTILINE_STRING_INCOMPLETE = "^%[%[.-.*"
-local MULTILINE_COMMENT = "^%-%-%[(=*)%[.-%]%1%]"
-local MULTILINE_COMMENT_INCOMPLETE = "^%-%-%[%[.-.*"
+const MULTILINE_STRING = "^%[(=*)%[.-%]%1%]"
+const MULTILINE_STRING_INCOMPLETE = "^%[%[.-.*"
+const MULTILINE_COMMENT = "^%-%-%[(=*)%[.-%]%1%]"
+const MULTILINE_COMMENT_INCOMPLETE = "^%-%-%[%[.-.*"
 
-local SINGLELINE_COMMENT = "^%-%-.-\n"
-local SINGLELINE_COMMENT_INCOMPLETE = "^%-%-.-.*"
+const SINGLELINE_COMMENT = "^%-%-.-\n"
+const SINGLELINE_COMMENT_INCOMPLETE = "^%-%-.-.*"
 
-local LUAU_KEYWORDS = {
+const LUAU_KEYWORDS = {
+	["local"] = true,
+	["const"] = true,
 	["and"] = true,
 	["break"] = true,
 	["do"] = true,
@@ -38,7 +38,6 @@ local LUAU_KEYWORDS = {
 	["function"] = true,
 	["if"] = true,
 	["in"] = true,
-	["local"] = true,
 	["nil"] = true,
 	["not"] = true,
 	["while"] = true,
@@ -51,7 +50,7 @@ local LUAU_KEYWORDS = {
 	["until"] = true,
 	["continue"] = true,
 }
-local LUAU_BUILTIN = {
+const LUAU_BUILTIN = {
 	["assert"] = true,
 	["collectgarbage"] = true,
 	["error"] = true,
@@ -81,7 +80,7 @@ local LUAU_BUILTIN = {
 	["require"] = true,
 	["typeof"] = true,
 }
-local LUAU_OPERATORS = {
+const LUAU_OPERATORS = {
 	["("] = true,
 	[")"] = true,
 
@@ -114,7 +113,7 @@ local LUAU_OPERATORS = {
 	["..="] = true,
 }
 
-local function token_dump(tok: string): (TokenType, string)
+const function yield_token(tok: string): (TokenType, string)
 	if LUAU_OPERATORS[tok] then
 		return "operator", tok
 	end
@@ -122,23 +121,23 @@ local function token_dump(tok: string): (TokenType, string)
 	return tok, tok
 end
 
-local function number_dump(tok: string): (TokenType, string)
+const function yield_number(tok: string): (TokenType, string)
 	return "number", tok
 end
 
-local function string_dump(tok: string): (TokenType, string)
+const function yield_string(tok: string): (TokenType, string)
 	return "string", tok
 end
 
-local function comment_dump(tok: string): (TokenType, string)
+const function yield_comment(tok: string): (TokenType, string)
 	return "comment", tok
 end
 
-local function whitespace_dump(tok: string): (TokenType, string)
+const function yield_whitespace(tok: string): (TokenType, string)
 	return "whitespace", tok
 end
 
-local function lua_vdump(tok: string): (TokenType, string)
+const function yield_lua(tok: string): (TokenType, string)
 	if LUAU_KEYWORDS[tok] then
 		return "keyword", tok
 	elseif LUAU_BUILTIN[tok] then
@@ -148,43 +147,43 @@ local function lua_vdump(tok: string): (TokenType, string)
 	end
 end
 
-return table.freeze({
-	{ pattern = WHITESPACE, func = whitespace_dump },
+return {
+	{ pattern = WHITESPACE, func = yield_whitespace },
 
-	{ pattern = IDEN, func = lua_vdump },
+	{ pattern = IDEN, func = yield_lua },
 
-	{ pattern = NUMBER_BIN, func = number_dump },
-	{ pattern = NUMBER_HEX, func = number_dump },
-	{ pattern = NUMBER_SCI, func = number_dump },
-	{ pattern = NUMBER_DECI, func = number_dump },
+	{ pattern = NUMBER_BIN, func = yield_number },
+	{ pattern = NUMBER_HEX, func = yield_number },
+	{ pattern = NUMBER_SCI, func = yield_number },
+	{ pattern = NUMBER_DECI, func = yield_number },
 
-	{ pattern = STRING_EMPTY, func = string_dump },
-	{ pattern = STRING_ESCAPE, func = string_dump },
-	{ pattern = STRING, func = string_dump },
-	{ pattern = STRING_INCOMPLETE, func = string_dump },
-	{ pattern = MULTILINE_STRING, func = string_dump },
-	{ pattern = MULTILINE_STRING_INCOMPLETE, func = string_dump },
-	{ pattern = STRING_INTERPOLATED, func = string_dump },
+	{ pattern = STRING_EMPTY, func = yield_string },
+	{ pattern = STRING_ESCAPE, func = yield_string },
+	{ pattern = STRING, func = yield_string },
+	{ pattern = STRING_INCOMPLETE, func = yield_string },
+	{ pattern = MULTILINE_STRING, func = yield_string },
+	{ pattern = MULTILINE_STRING_INCOMPLETE, func = yield_string },
+	{ pattern = STRING_INTERPOLATED, func = yield_string },
 
-	{ pattern = MULTILINE_COMMENT, func = comment_dump },
-	{ pattern = MULTILINE_COMMENT_INCOMPLETE, func = comment_dump },
-	{ pattern = SINGLELINE_COMMENT, func = comment_dump },
-	{ pattern = SINGLELINE_COMMENT_INCOMPLETE, func = comment_dump },
+	{ pattern = MULTILINE_COMMENT, func = yield_comment },
+	{ pattern = MULTILINE_COMMENT_INCOMPLETE, func = yield_comment },
+	{ pattern = SINGLELINE_COMMENT, func = yield_comment },
+	{ pattern = SINGLELINE_COMMENT_INCOMPLETE, func = yield_comment },
 
-	{ pattern = "^==", func = token_dump },
-	{ pattern = "^~=", func = token_dump },
-	{ pattern = "^<=", func = token_dump },
-	{ pattern = "^>=", func = token_dump },
-	{ pattern = "^+=", func = token_dump },
-	{ pattern = "^-=", func = token_dump },
-	{ pattern = "^*=", func = token_dump },
-	{ pattern = "^/=", func = token_dump },
-	{ pattern = "^//=", func = token_dump },
-	{ pattern = "^%*=", func = token_dump },
-	{ pattern = "^%%=", func = token_dump },
-	{ pattern = "^//", func = token_dump },
-	{ pattern = "^%.%.%.", func = token_dump },
-	{ pattern = "^%.%.", func = token_dump },
-	{ pattern = "^%.%.=", func = token_dump },
-	{ pattern = "^.", func = token_dump },
-}) :: types.Language<TokenType>
+	{ pattern = "^==", func = yield_token },
+	{ pattern = "^~=", func = yield_token },
+	{ pattern = "^<=", func = yield_token },
+	{ pattern = "^>=", func = yield_token },
+	{ pattern = "^+=", func = yield_token },
+	{ pattern = "^-=", func = yield_token },
+	{ pattern = "^*=", func = yield_token },
+	{ pattern = "^/=", func = yield_token },
+	{ pattern = "^//=", func = yield_token },
+	{ pattern = "^%*=", func = yield_token },
+	{ pattern = "^%%=", func = yield_token },
+	{ pattern = "^//", func = yield_token },
+	{ pattern = "^%.%.%.", func = yield_token },
+	{ pattern = "^%.%.", func = yield_token },
+	{ pattern = "^%.%.=", func = yield_token },
+	{ pattern = "^.", func = yield_token },
+} :: types.Language<TokenType>
