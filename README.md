@@ -3,8 +3,7 @@ An ok lexer written in Luau.
 
 ## Usage Example
 ```luau
-local oklexer = require("path/to/oklexer")
-local luau_scanner = oklexer.scanner(oklexer.languages.luau)
+local oklexer = require("oklexer")
 
 local luau_source = [[
 -- cool comment
@@ -14,11 +13,14 @@ local hex = 0x123456790FAB -- fabulous
 local function add(a, b) return a + b end
 ]]
 
-for token_type, content in luau_scanner(luau_source) do
+local consume = oklexer.scanner(oklexer.languages.luau, luau_source)
+
+for token_type, content in consume do
 	if token_type == "whitespace" then
 		continue
 	end
 
 	print(`{token_type} -> '{content}'`)
 end
+
 ```
