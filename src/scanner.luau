@@ -1,29 +1,40 @@
-local types = require("./types")
+const types = require("./types")
 
-local function scanner<TokenType>(language: types.Language<TokenType>)
-	local function scan(source: string)
+const function scanner<TokenType>(language: types.Language<TokenType>)
+	const function scan(source: string)
+		const eof = string.len(source)
+
 		local cursor = 0
 
-		local iterator = function()
-			for _, match in language do
-				local pattern, func = match.pattern, match.func
-				local start, finish = source:find(pattern, cursor)
+		const function peek(): (TokenType, string, number)
+			if cursor > eof then
+				error("attempt to peek past source eof")
+			end
 
-				if start == nil then
+			for _, match in language do
+				const start, finish = string.find(source, match.pattern, cursor)
+
+				if start == nil or finish == nil then
 					continue
 				end
 
-				cursor = finish + 1
+				const token_type, token_content = match.func(string.sub(source, start, finish))
 
-				local token = source:sub(start, finish)
-
-				return func(token)
+				return token_type, token_content, finish + 1
 			end
 
-			return nil
+			error("invalid language; failed to match any defined patterns")
 		end
 
-		return iterator
+		const function consume(): (TokenType, string)
+			const token_type, token_content, next_cursor = peek()
+
+			cursor = next_cursor
+
+			return token_type, token_content
+		end
+
+		return consume, peek
 	end
 
 	return scan
