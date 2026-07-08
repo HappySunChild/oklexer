@@ -1,10 +1,9 @@
-local oklexer = table.freeze({
+return {
 	scanner = require("@self/scanner"),
 
-	languages = table.freeze({
+	languages = {
 		luau = require("@self/languages/luau"),
 		json = require("@self/languages/json"),
-	}),
-})
-
-return oklexer
+		math = require("@self/languages/math"),
+	},
+}
