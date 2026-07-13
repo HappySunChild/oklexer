@@ -46,50 +46,10 @@ const LUAU_KEYWORDS = {
 	["return"] = true,
 	["then"] = true,
 	["true"] = true,
-	["self"] = true,
 	["until"] = true,
 	["continue"] = true,
 }
-const LUAU_BUILTIN = {
-	["assert"] = true,
-	["collectgarbage"] = true,
-	["error"] = true,
-	["_G"] = true,
-	["gcinfo"] = true,
-	["getfenv"] = true,
-	["getmetatable"] = true,
-	["ipairs"] = true,
-	["loadstring"] = true,
-	["newproxy"] = true,
-	["next"] = true,
-	["pairs"] = true,
-	["pcall"] = true,
-	["print"] = true,
-	["rawequal"] = true,
-	["rawget"] = true,
-	["rawset"] = true,
-	["select"] = true,
-	["setfenv"] = true,
-	["setmetatable"] = true,
-	["tonumber"] = true,
-	["tostring"] = true,
-	["type"] = true,
-	["unpack"] = true,
-	["_VERSION"] = true,
-	["xpcall"] = true,
-	["require"] = true,
-	["typeof"] = true,
-}
 const LUAU_OPERATORS = {
-	["("] = true,
-	[")"] = true,
-
-	["["] = true,
-	["]"] = true,
-
-	["{"] = true,
-	["}"] = true,
-
 	["="] = true,
 	["+"] = true,
 	["-"] = true,
@@ -140,8 +100,6 @@ end
 const function yield_lua(tok: string): (TokenType, string)
 	if LUAU_KEYWORDS[tok] then
 		return "keyword", tok
-	elseif LUAU_BUILTIN[tok] then
-		return "builtin", tok
 	else
 		return "iden", tok
 	end
